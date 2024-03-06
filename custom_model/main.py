@@ -1,11 +1,12 @@
 from model import CustomModel
 from transformers import BertTokenizer
-from dataloader import get_dataloader
+from dataloader import get_dataloader, prepare_inputs
 from tqdm import tqdm as progress_bar
 import torch
 from dataset import getData, AminoAcidDataset
 from torch import nn, optim
 
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 sequences, labels = getData()
 dataset = AminoAcidDataset(sequences, labels)
@@ -24,7 +25,8 @@ def train(model, dataset, tokenizer):
         model.train()
 
         for seqs, labels in progress_bar(train_dataloader):
-            inputs = tokenizer(seqs) 
+            tokenized_seqs = prepare_inputs(seqs, tokenizer) 
+            labels = labels.to(device)
             predictions = model(inputs, labels)
             loss = criterion(predictions, labels)
             loss.backward()
@@ -42,10 +44,11 @@ def run_eval(model, dataset):
     total = 0
     for seqs, labels in progress_bar(dataloader):
         tokenizer = BertTokenizer.from_pretrained('bert-base-uncased')
-        tokenized_seq = tokenizer(seqs, padding=True, truncation=True, return_tensors='pt')
-        #print(seqs[0], len(seqs[0]))
-        #print(tokenized_seq['input_ids'][0], len(tokenized_seq['input_ids'][0]))
-        #might be a problem that sequence length != tokenized_seq
+        tokenized_seq = prepare_inputs(seqs, tokenizer)
+        labels = labels.to(device)
+        print(tokenized_seq)
+        print(f'labels_device{labels.device}')
+        print(next(model.parameters()).device)
         probabilities = model(tokenized_seq, labels)
         predictions = torch.round(probabilities)
         #print(predictions, labels)
@@ -57,6 +60,6 @@ def run_eval(model, dataset):
 
 
 tokenizer = BertTokenizer.from_pretrained('bert-base-uncased')
-model = CustomModel(tokenizer)
+model = CustomModel(tokenizer).to(device)
 run_eval(model, dataset)
 train(model, dataset, tokenizer)
