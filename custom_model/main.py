@@ -49,11 +49,12 @@ def run_eval(model, dataset):
         probabilities = model(tokenized_seq, labels) #old
         #probabilities = model( #new
         predictions = torch.round(probabilities)
-        #print(predictions, labels)
-        num_correct += ((predictions == labels).sum()).item()
+        #getting num_correct
+        new_predictions = []
+        for i in range(len(predictions)):
+            if predictions[i].item() == labels[i].item():
+                num_correct += 1
         total += len(predictions)
-        #print(num_correct)
-        #print(total)
     print(f'Accuracy is {num_correct}/{total}, {num_correct/total}')
 
 
