@@ -29,14 +29,16 @@ def train(model, dataset, tokenizer):
         for seqs, labels in progress_bar(train_dataloader):
             tokenized_seqs = prepare_inputs(seqs, tokenizer) 
             labels = labels.to(device)
+            #predictions and labels need to have the same dtype: float32
+            labels = labels.float()
             predictions = model(tokenized_seqs, labels)
-            print(f'predictions {predictions}')
-            print(f'labels {labels}')
             loss = criterion(predictions, labels)
+            losses += loss
             loss.backward()
             optimizer.step()
             optimizer.zero_grad()
-            #print(tokenizer(seqs), len(tokenizer(seqs)))
+        
+        print(f'Epoch {epoch} - Loss: {losses}')
 
 
 
@@ -59,5 +61,5 @@ def run_eval(model, dataset):
 
 tokenizer = BertTokenizer.from_pretrained('bert-base-uncased')
 model = CustomModel(tokenizer).to(device)
-run_eval(model, dataset)
+#run_eval(model, dataset)
 train(model, dataset, tokenizer)
