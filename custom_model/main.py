@@ -46,10 +46,8 @@ def run_eval(model, dataset):
         tokenizer = BertTokenizer.from_pretrained('bert-base-uncased')
         tokenized_seq = prepare_inputs(seqs, tokenizer)
         labels = labels.to(device)
-        print(tokenized_seq)
-        print(f'labels_device{labels.device}')
-        print(next(model.parameters()).device)
-        probabilities = model(tokenized_seq, labels)
+        probabilities = model(tokenized_seq, labels) #old
+        #probabilities = model( #new
         predictions = torch.round(probabilities)
         #print(predictions, labels)
         num_correct += ((predictions == labels).sum()).item()
