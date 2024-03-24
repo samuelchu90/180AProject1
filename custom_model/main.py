@@ -15,7 +15,9 @@ dataset = AminoAcidDataset(sequences, labels)
 def train(model, dataset, tokenizer):
     print("<<Training>>")
     n_epochs = 3
-    criterion = nn.CrossEntropyLoss()
+    #criterion = nn.CrossEntropyLoss() #old
+    criterion = nn.BCELoss() #new
+
     train_dataloader = get_dataloader(dataset)
 
     optimizer = optim.Adam(model.parameters(), lr=0.01)
@@ -28,6 +30,8 @@ def train(model, dataset, tokenizer):
             tokenized_seqs = prepare_inputs(seqs, tokenizer) 
             labels = labels.to(device)
             predictions = model(tokenized_seqs, labels)
+            print(f'predictions {predictions}')
+            print(f'labels {labels}')
             loss = criterion(predictions, labels)
             loss.backward()
             optimizer.step()
@@ -46,19 +50,14 @@ def run_eval(model, dataset):
         tokenizer = BertTokenizer.from_pretrained('bert-base-uncased')
         tokenized_seq = prepare_inputs(seqs, tokenizer)
         labels = labels.to(device)
-        probabilities = model(tokenized_seq, labels) #old
-        #probabilities = model( #new
+        probabilities = model(tokenized_seq, labels) 
         predictions = torch.round(probabilities)
-        #getting num_correct
-        new_predictions = []
-        for i in range(len(predictions)):
-            if predictions[i].item() == labels[i].item():
-                num_correct += 1
+        num_correct += (predictions == labels).sum()
         total += len(predictions)
     print(f'Accuracy is {num_correct}/{total}, {num_correct/total}')
 
 
 tokenizer = BertTokenizer.from_pretrained('bert-base-uncased')
 model = CustomModel(tokenizer).to(device)
-#run_eval(model, dataset)
+run_eval(model, dataset)
 train(model, dataset, tokenizer)
