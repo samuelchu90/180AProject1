@@ -27,7 +27,7 @@ def train(model, dataset, tokenizer):
         for seqs, labels in progress_bar(train_dataloader):
             tokenized_seqs = prepare_inputs(seqs, tokenizer) 
             labels = labels.to(device)
-            predictions = model(inputs, labels)
+            predictions = model(tokenized_seqs, labels)
             loss = criterion(predictions, labels)
             loss.backward()
             optimizer.step()
@@ -60,5 +60,5 @@ def run_eval(model, dataset):
 
 tokenizer = BertTokenizer.from_pretrained('bert-base-uncased')
 model = CustomModel(tokenizer).to(device)
-run_eval(model, dataset)
+#run_eval(model, dataset)
 train(model, dataset, tokenizer)
