@@ -14,13 +14,14 @@ dataset = AminoAcidDataset(sequences, labels)
 
 def train(model, dataset, tokenizer):
     print("<<Training>>")
-    n_epochs = 3
+    n_epochs = 15 
     #criterion = nn.CrossEntropyLoss() #old
     criterion = nn.BCELoss() #new
 
     train_dataloader = get_dataloader(dataset)
 
-    optimizer = optim.Adam(model.parameters(), lr=0.01)
+    optimizer = optim.Adam(model.parameters(), lr=0.0000001)
+    scheduler = optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=n_epochs)
 
     for epoch in range(n_epochs):
         losses = 0
@@ -39,11 +40,13 @@ def train(model, dataset, tokenizer):
             optimizer.zero_grad()
         
         print(f'Epoch {epoch} - Loss: {losses}')
+        #run_eval(model, dataset)
 
 
 
 def run_eval(model, dataset):
     print("<<Eval>>")
+    model.eval()
     dataloader = get_dataloader(dataset)
 
     num_correct = 0
